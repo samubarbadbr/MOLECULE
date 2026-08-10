@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ["main"] # Cambia in "master" se il tuo branch principale si chiama master
+    branches: ["main"] # Verifica se il tuo branch si chiama main o master
 
 permissions:
   contents: read
@@ -24,14 +24,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node
-        uses: actions/node-releases/run-v1@v1
+        uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci || npm install
 
-      - name: Build
+      - name: Build project
         run: npm run build
 
       - name: Setup Pages
