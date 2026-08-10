@@ -5,9 +5,8 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    base: './', // <-- Assicurati che ci sia questo
+    base: './', // <-- FONDAMENTALE PER FAR TROVARE I FILE COMPILATI
     plugins: [react(), tailwindcss()],
-    // ...
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
