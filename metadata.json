@@ -1,0 +1,6 @@
+{
+  "name": "OLED Molecule Lab 3D",
+  "description": "Mobile-first 3D molecular visualizer, inspector, and chemical structure analyzer powered by Three.js and PubChem.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
