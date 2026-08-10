@@ -12,6 +12,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Three.js CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- OrbitControls CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -380,6 +382,26 @@
         bonds: [
           { id: 1, atom1Id: 1, atom2Id: 2, order: 1 },
           { id: 2, atom1Id: 1, atom2Id: 3, order: 1 }
+        ]
+      },
+      {
+        id: 'ammonia',
+        name: 'Ammoniaca',
+        formula: 'NH₃',
+        molecularMass: 17.03,
+        category: 'basic',
+        description: 'Geometria piramidale trigonale (107.8°).',
+        pubchemCid: 222,
+        atoms: [
+          { id: 1, element: 'N', x: 0.000, y: 0.116, z: 0.000 },
+          { id: 2, element: 'H', x: 0.000, y: -0.271, z: 0.937 },
+          { id: 3, element: 'H', x: 0.811, y: -0.271, z: -0.468 },
+          { id: 4, element: 'H', x: -0.811, y: -0.271, z: -0.468 }
+        ],
+        bonds: [
+          { id: 1, atom1Id: 1, atom2Id: 2, order: 1 },
+          { id: 2, atom1Id: 1, atom2Id: 3, order: 1 },
+          { id: 3, atom1Id: 1, atom2Id: 4, order: 1 }
         ]
       },
       {
