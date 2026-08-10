@@ -5,7 +5,7 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    base: './', // <-- FONDAMENTALE PER FAR TROVARE I FILE COMPILATI
+    base: './',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
