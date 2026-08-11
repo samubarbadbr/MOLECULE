@@ -49,16 +49,12 @@
     }
 
     .oled-glass {
-      background-color: rgba(20, 20, 24, 0.72);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
+      background-color: #141418;
       border: 1px solid rgba(255, 255, 255, 0.12);
     }
 
     .oled-glass-pill {
-      background-color: rgba(15, 15, 18, 0.85);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background-color: #0f0f12;
       border: 1px solid rgba(255, 255, 255, 0.14);
     }
 
@@ -93,10 +89,14 @@
       pointer-events: none;
     }
 
-    /* Bottom Sheet Physics */
+    /* Bottom Sheet Physics & Native Spring Transitions */
     #bottom-sheet {
-      will-change: transform, height;
-      transition: height 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      background-color: #09090b !important;
+      will-change: transform, opacity, height;
+      transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.25s ease-out, height 0.38s cubic-bezier(0.32, 0.72, 0, 1) !important;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      isolation: isolate;
     }
 
     #bottom-sheet.dragging {
@@ -217,10 +217,10 @@
   <!-- CONTENITORE UI PRINCIPALE DYNAMIC VIEWPORT (100dvh) -->
   <div class="relative z-10 flex flex-col h-full justify-between pointer-events-none w-full">
 
-    <!-- TOP HUD BAR (iOS Dynamic Island Safe) -->
-    <header class="w-full safe-pad-top px-3.5 pointer-events-none flex flex-col gap-2 pt-2 shrink-0">
+    <!-- TOP HUD BAR (iOS Dynamic Island Safe & Floating Card) -->
+    <header class="w-full pointer-events-none flex flex-col items-center gap-2 pt-[calc(env(safe-area-inset-top)+8px)] px-3 sm:px-4 shrink-0 max-w-md mx-auto">
       <!-- Primary Header Glass Card -->
-      <div class="pointer-events-auto flex items-center justify-between oled-glass rounded-2xl px-4 py-2.5 shadow-2xl">
+      <div class="pointer-events-auto w-full flex items-center justify-between bg-zinc-950 border border-white/15 rounded-2xl px-3.5 py-2.5 shadow-2xl">
       <div class="flex items-center gap-3 min-w-0">
         <div class="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
           <i data-lucide="atom" class="w-5 h-5 animate-pulse"></i>
@@ -308,59 +308,20 @@
     <!-- CONTENITORE BOTTOM (Bottom Sheet + Navigation Bar) -->
     <div class="w-full pointer-events-none">
 
-      <!-- Modal Mobile Bottom Sheet (Solid Opaque - Safari WebKit Compliant) -->
-      <div id="bottom-sheet" class="fixed inset-x-0 bottom-16 z-50 max-h-[75dvh] flex flex-col rounded-t-3xl bg-zinc-950 border-t border-white/15 shadow-2xl translate-y-full opacity-0 pointer-events-none invisible" style="background-color: #09090b; isolation: isolate; transform: translateZ(0); -webkit-backface-visibility: hidden; backface-visibility: hidden; will-change: transform; transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.25s ease-out;">
+      <!-- Modal Mobile Bottom Sheet (Centered Floating Card - Solid Opaque) -->
+      <div id="bottom-sheet" class="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+68px)] z-50 w-[94%] max-w-md mx-auto max-h-[72dvh] flex flex-col rounded-3xl bg-zinc-950 border border-white/15 shadow-2xl translate-y-full opacity-0 pointer-events-none invisible" style="background-color: #09090b; isolation: isolate; -webkit-backface-visibility: hidden; backface-visibility: hidden;">
         
-        <!-- HEADER FISSO OPACO (NON SCORRE MAI: Maniglia + Ricerca PubChem + Quick Actions) -->
-        <div class="flex-none p-3.5 bg-zinc-950 border-b border-white/10 z-20 space-y-2.5" style="background-color: #09090b;">
+        <!-- HEADER FISSO OPACO (SOLO TITOLO SCHEDA E MANIGLIA) -->
+        <div class="flex-none p-3.5 bg-zinc-950 border-b border-white/10 z-20 rounded-t-3xl" style="background-color: #09090b;">
           <!-- Drag Handle Area -->
           <div id="sheet-drag-handle" class="w-full flex items-center justify-between cursor-grab active:cursor-grabbing select-none py-0.5 px-0.5" style="touch-action: none;">
-            <div class="flex items-center gap-1.5 text-cyan-400 font-semibold text-[11px] font-mono truncate min-w-0">
-              <i data-lucide="atom" class="w-3.5 h-3.5 shrink-0"></i>
+            <div class="flex items-center gap-1.5 text-cyan-400 font-semibold text-xs font-mono truncate min-w-0">
+              <i data-lucide="atom" class="w-4 h-4 shrink-0"></i>
               <span id="txt-sheet-tab-title" class="truncate uppercase tracking-wider">RICERCA MOLECOLE</span>
             </div>
             <div class="w-10 h-1 rounded-full bg-white/30 transition-all shrink-0 my-0.5"></div>
             <button id="btn-close-sheet" type="button" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-300 hover:text-white flex items-center justify-center transition-all cursor-pointer shrink-0 active:scale-95" title="Chiudi Scheda">
               <i data-lucide="x" class="w-4 h-4"></i>
-            </button>
-          </div>
-
-          <!-- PUBCHEM SEARCH BAR (FIXED IN HEADER) -->
-          <form id="form-pubchem" class="relative">
-            <div class="relative flex items-center">
-              <input id="input-pubchem" type="text" placeholder="Cerca molecola PubChem (es. Aspirina, Caffeina)..." class="w-full bg-zinc-900/90 border border-zinc-700/80 rounded-xl pl-9 pr-20 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 font-sans" />
-              <i data-lucide="search" class="w-3.5 h-3.5 text-cyan-400 absolute left-3"></i>
-              <button id="btn-pubchem-submit" type="submit" class="absolute right-1 px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-[11px] transition-all active:scale-95 flex items-center gap-1 shadow-md cursor-pointer">
-                <span>Cerca</span>
-              </button>
-            </div>
-            <div id="pubchem-status-msg" class="hidden flex items-center gap-2 mt-1.5 text-[11px] text-red-400 bg-red-950/50 border border-red-500/40 rounded-lg p-2 font-mono">
-              <i data-lucide="alert-circle" class="w-3.5 h-3.5 shrink-0"></i>
-              <span id="txt-pubchem-error"></span>
-            </div>
-          </form>
-
-          <!-- PULSANTI VELOCI (QUICK ACTIONS ROW) -->
-          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
-            <button data-cam="front" class="btn-cam-preset text-[11px] font-mono px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-300 hover:text-white hover:border-cyan-400 transition-all shrink-0 flex items-center gap-1 active:scale-95 cursor-pointer" title="Vista Frontale">
-              <i data-lucide="eye" class="w-3 h-3 text-cyan-400"></i>
-              <span>Frontale</span>
-            </button>
-            <button data-cam="top" class="btn-cam-preset text-[11px] font-mono px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-300 hover:text-white hover:border-cyan-400 transition-all shrink-0 flex items-center gap-1 active:scale-95 cursor-pointer" title="Vista Superiore">
-              <i data-lucide="arrow-up-circle" class="w-3 h-3 text-cyan-400"></i>
-              <span>Superiore</span>
-            </button>
-            <button id="btn-reset-view" class="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-300 hover:text-white hover:border-cyan-400 transition-all shrink-0 flex items-center gap-1 active:scale-95 cursor-pointer" title="Reset Vista Camera">
-              <i data-lucide="refresh-cw" class="w-3 h-3 text-amber-400"></i>
-              <span>Reset Vista</span>
-            </button>
-            <button id="btn-autorotate-toggle" class="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-cyan-500/20 border border-cyan-400 text-cyan-300 transition-all shrink-0 flex items-center gap-1 active:scale-95 cursor-pointer shadow-[0_0_10px_rgba(0,240,255,0.2)]" title="Toggle Auto-Rotazione">
-              <i data-lucide="rotate-cw" class="w-3 h-3 text-emerald-400"></i>
-              <span id="txt-autorotate-state">Auto-Ruota: On</span>
-            </button>
-            <button id="btn-labels-toggle" class="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-cyan-500/20 border border-cyan-400 text-cyan-300 transition-all shrink-0 flex items-center gap-1 active:scale-95 cursor-pointer shadow-[0_0_10px_rgba(0,240,255,0.2)]" title="Toggle Etichette Atomiche">
-              <i data-lucide="tag" class="w-3 h-3 text-purple-400"></i>
-              <span id="txt-labels-state">Etichette: On</span>
             </button>
           </div>
         </div>
@@ -370,6 +331,46 @@
 
           <!-- TAB 1: MOTORE DI RICERCA UNIVERSALE (PRESET & RICERCHE POPOLARI) -->
           <div id="tab-sec-molecules" class="space-y-4">
+
+            <!-- PUBCHEM SEARCH BAR (IN TAB 1) -->
+            <form id="form-pubchem" class="relative space-y-1.5">
+              <div class="relative flex items-center">
+                <input id="input-pubchem" type="text" placeholder="Cerca molecola PubChem (es. Aspirina, Caffeina)..." class="w-full bg-zinc-900/90 border border-zinc-700/80 rounded-xl pl-9 pr-20 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 font-sans" />
+                <i data-lucide="search" class="w-4 h-4 text-cyan-400 absolute left-3"></i>
+                <button id="btn-pubchem-submit" type="submit" class="absolute right-1 px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-[11px] transition-all active:scale-95 flex items-center gap-1 shadow-md cursor-pointer">
+                  <span>Cerca</span>
+                </button>
+              </div>
+              <div id="pubchem-status-msg" class="hidden flex items-center gap-2 text-[11px] text-red-400 bg-red-950/50 border border-red-500/40 rounded-lg p-2 font-mono">
+                <i data-lucide="alert-circle" class="w-3.5 h-3.5 shrink-0"></i>
+                <span id="txt-pubchem-error"></span>
+              </div>
+            </form>
+
+            <!-- PULSANTI VELOCI (QUICK ACTIONS ROW) -->
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
+              <button data-cam="front" class="btn-cam-preset text-[11px] font-mono px-2.5 py-1.5 rounded-xl bg-zinc-900 border border-zinc-700 text-zinc-300 hover:text-white hover:border-cyan-400 transition-all shrink-0 flex items-center gap-1 active:scale-95 cursor-pointer" title="Vista Frontale">
+                <i data-lucide="eye" class="w-3.5 h-3.5 text-cyan-400"></i>
+                <span>Frontale</span>
+              </button>
+              <button data-cam="top" class="btn-cam-preset text-[11px] font-mono px-2.5 py-1.5 rounded-xl bg-zinc-900 border border-zinc-700 text-zinc-300 hover:text-white hover:border-cyan-400 transition-all shrink-0 flex items-center gap-1 active:scale-95 cursor-pointer" title="Vista Superiore">
+                <i data-lucide="arrow-up-circle" class="w-3.5 h-3.5 text-cyan-400"></i>
+                <span>Superiore</span>
+              </button>
+              <button id="btn-reset-view" class="text-[11px] font-mono px-2.5 py-1.5 rounded-xl bg-zinc-900 border border-zinc-700 text-zinc-300 hover:text-white hover:border-cyan-400 transition-all shrink-0 flex items-center gap-1 active:scale-95 cursor-pointer" title="Reset Vista Camera">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span>Reset Vista</span>
+              </button>
+              <button id="btn-autorotate-toggle" class="text-[11px] font-mono px-2.5 py-1.5 rounded-xl bg-cyan-500/20 border border-cyan-400 text-cyan-300 transition-all shrink-0 flex items-center gap-1 active:scale-95 cursor-pointer shadow-[0_0_10px_rgba(0,240,255,0.2)]" title="Toggle Auto-Rotazione">
+                <i data-lucide="rotate-cw" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span id="txt-autorotate-state">Auto-Ruota: On</span>
+              </button>
+              <button id="btn-labels-toggle" class="text-[11px] font-mono px-2.5 py-1.5 rounded-xl bg-cyan-500/20 border border-cyan-400 text-cyan-300 transition-all shrink-0 flex items-center gap-1 active:scale-95 cursor-pointer shadow-[0_0_10px_rgba(0,240,255,0.2)]" title="Toggle Etichette Atomiche">
+                <i data-lucide="tag" class="w-3.5 h-3.5 text-purple-400"></i>
+                <span id="txt-labels-state">Etichette: On</span>
+              </button>
+            </div>
+
             <!-- Quick Search Suggestion Chips -->
             <div>
               <h3 class="text-xs font-mono text-zinc-400 uppercase tracking-wider mb-2.5">Preset Rapidi / Molecole Popolari</h3>
@@ -410,7 +411,7 @@
 
           <!-- TAB 2: COMPLETE PERIODIC TABLE (118 ELEMENTS) -->
           <div id="tab-sec-periodic" class="hidden space-y-4">
-            <div class="sticky top-0 z-10 bg-zinc-950/95 backdrop-blur-xl -mx-4 px-4 pt-1 pb-3 border-b border-white/10 space-y-2">
+            <div class="space-y-2">
               <div class="flex items-center justify-between">
                 <h3 class="text-xs font-mono text-zinc-400 uppercase tracking-wider">Tavola Periodica (118 Elementi)</h3>
                 <span class="text-[10px] font-mono text-cyan-400">Tocca per generare atomo 3D</span>
@@ -600,9 +601,9 @@
         </div>
       </div>
 
-      <!-- NAVIGATION BAR (FIXED AT BOTTOM OF SCREEN) -->
-      <div class="fixed inset-x-0 bottom-0 h-16 bg-zinc-950 border-t border-white/10 flex items-center justify-around px-2 pb-[env(safe-area-inset-bottom)] pointer-events-auto shadow-2xl z-40" style="isolation: isolate; transform: translateZ(0);">
-        <nav class="w-full max-w-md mx-auto flex items-center justify-around px-1">
+      <!-- NAVIGATION BAR (FLOATING CENTERED CARD - iOS Safe Area Compliant) -->
+      <div class="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+8px)] z-40 w-[92%] max-w-md mx-auto pointer-events-auto bg-zinc-950 border border-white/15 rounded-2xl shadow-2xl p-1.5" style="isolation: isolate; transform: translateZ(0);">
+        <nav class="w-full flex items-center justify-around px-0.5">
           <button data-tab="molecules" class="btn-tab-nav flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 bg-gradient-to-b from-cyan-500/20 to-cyan-500/5 text-cyan-400 border border-cyan-500/30 shadow-[0_0_12px_rgba(0,240,255,0.2)] cursor-pointer">
             <i data-lucide="atom" class="w-4 h-4 mb-0.5"></i>
             <span class="text-[10px] font-medium">Molecole</span>
