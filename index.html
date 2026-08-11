@@ -127,7 +127,7 @@
     }
   </style>
 </head>
-<body class="bg-black text-white antialiased overflow-hidden">
+<body class="h-[100dvh] w-screen overflow-hidden flex flex-col bg-black relative text-white antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
 
   <!-- ULTRA-FUTURISTIC OLED SPLASH SCREEN (LANDING PAGE) -->
   <div id="splash-screen" class="fixed inset-0 z-[9999] bg-black text-white flex flex-col justify-between p-6 overflow-hidden select-none transition-all duration-700 ease-out">
@@ -209,15 +209,18 @@
   </div>
 
   <!-- 3D WebGL Canvas Container -->
-  <div id="canvas-container" class="absolute inset-0 w-full h-full bg-black cursor-grab active:cursor-grabbing"></div>
+  <div id="canvas-container" class="absolute inset-0 w-full h-full bg-black cursor-grab active:cursor-grabbing z-0"></div>
 
   <!-- 2D AR HUD Overlay Canvas -->
-  <canvas id="overlay-canvas" class="absolute inset-0 w-full h-full z-10 pointer-events-none"></canvas>
+  <canvas id="overlay-canvas" class="absolute inset-0 w-full h-full z-0 pointer-events-none"></canvas>
 
-  <!-- TOP HUD BAR (iOS Dynamic Island Safe) -->
-  <header class="absolute top-0 left-0 right-0 z-20 safe-pad-top px-3.5 pointer-events-none flex flex-col gap-2">
-    <!-- Primary Header Glass Card -->
-    <div class="pointer-events-auto flex items-center justify-between oled-glass rounded-2xl px-4 py-2.5 shadow-2xl">
+  <!-- CONTENITORE UI PRINCIPALE DYNAMIC VIEWPORT (100dvh) -->
+  <div class="relative z-10 flex flex-col h-full justify-between pointer-events-none w-full">
+
+    <!-- TOP HUD BAR (iOS Dynamic Island Safe) -->
+    <header class="w-full safe-pad-top px-3.5 pointer-events-none flex flex-col gap-2 pt-2 shrink-0">
+      <!-- Primary Header Glass Card -->
+      <div class="pointer-events-auto flex items-center justify-between oled-glass rounded-2xl px-4 py-2.5 shadow-2xl">
       <div class="flex items-center gap-3 min-w-0">
         <div class="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
           <i data-lucide="atom" class="w-5 h-5 animate-pulse"></i>
@@ -239,6 +242,10 @@
 
       <!-- Quick Action Controls -->
       <div class="flex items-center gap-2 shrink-0 ml-2">
+        <button id="btn-open-splash" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/25 hover:text-cyan-200 font-mono text-xs font-semibold active:scale-95 transition-all shadow-[0_0_12px_rgba(0,240,255,0.15)]" title="Schermata Principale / Menu">
+          <i data-lucide="home" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Menu</span>
+        </button>
         <button id="btn-reset-view" class="p-2 rounded-xl bg-white/5 border border-white/10 text-zinc-300 hover:text-white active:scale-95 transition-all" title="Reset Camera">
           <i data-lucide="refresh-cw" class="w-4 h-4"></i>
         </button>
@@ -298,292 +305,333 @@
     </button>
   </div>
 
-    <!-- Touch-Driven Mobile Bottom Sheet (iOS Drawer with True Snap) -->
-    <div id="bottom-sheet" class="fixed bottom-0 left-0 right-0 z-30 oled-surface border-t border-white/12 rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.95)] flex flex-col h-[65px]">
-      <!-- Drag Handle Area (Minimalist iOS Pill) -->
-      <div id="sheet-drag-handle" class="w-full py-3.5 flex items-center justify-center cursor-grab active:cursor-grabbing bg-white/[0.02]">
-        <div class="w-10 h-1 rounded-full bg-white/30 transition-all"></div>
-      </div>
+    <!-- CONTENITORE BOTTOM (Bottom Sheet + Navigation Bar) -->
+    <div class="w-full flex flex-col justify-end pointer-events-none shrink-0">
 
-    <!-- Tab Content Scrollable Body -->
-    <div class="flex-1 overflow-y-auto px-4 pt-1 pb-28 no-scrollbar space-y-6">
-
-      <!-- TAB 1: MOTORE DI RICERCA UNIVERSALE (PUBCHEM API) -->
-      <div id="tab-sec-molecules" class="space-y-5">
-        <div class="bg-gradient-to-br from-cyan-950/30 via-zinc-900/60 to-black border border-cyan-500/30 rounded-2xl p-4 space-y-3 shadow-xl">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <i data-lucide="search" class="w-5 h-5 text-cyan-400"></i>
-              <h2 class="text-sm font-bold text-white uppercase tracking-wider">Motore di Ricerca Molecolare (PubChem)</h2>
+      <!-- Touch-Driven Mobile Bottom Sheet (iOS Drawer) -->
+      <div id="bottom-sheet" class="w-full bg-zinc-950/95 backdrop-blur-2xl border-t border-white/15 rounded-t-3xl shadow-[0_-12px_45px_rgba(0,0,0,0.95)] flex flex-col overflow-hidden transition-all duration-300 ease-out translate-y-full opacity-0 pointer-events-none max-h-[85dvh] pointer-events-auto h-[58dvh]">
+        
+        <!-- BLOCCO FISSO IN ALTO (NON SCORRE MAI: Maniglia + Ricerca PubChem + Quick Actions) -->
+        <div class="flex-none bg-zinc-950/95 border-b border-white/10 p-3 space-y-2 z-10 shrink-0">
+          <!-- Drag Handle Area -->
+          <div id="sheet-drag-handle" class="w-full flex items-center justify-between cursor-grab active:cursor-grabbing select-none py-1 px-1">
+            <div class="flex items-center gap-1.5 text-cyan-400 font-semibold text-[11px] font-mono truncate min-w-0">
+              <i data-lucide="atom" class="w-3.5 h-3.5 shrink-0"></i>
+              <span id="txt-sheet-tab-title" class="truncate">RICERCA MOLECOLE</span>
             </div>
-            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 font-semibold">Database Globale 3D</span>
+            <div class="w-10 h-1 rounded-full bg-white/30 transition-all shrink-0 my-0.5"></div>
+            <button id="btn-close-sheet" type="button" class="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-300 hover:text-white flex items-center justify-center transition-all cursor-pointer shrink-0" title="Chiudi Scheda">
+              <i data-lucide="x" class="w-3.5 h-3.5"></i>
+            </button>
           </div>
 
-          <p class="text-xs text-zinc-400 leading-relaxed">
-            Digita il nome di <strong>qualsiasi molecola chimica</strong> esistente al mondo (in inglese o italiano standard). L'app scaricherà la struttura 3D ufficiale dall'API di PubChem.
-          </p>
-
-          <!-- PubChem Search Form -->
-          <form id="form-pubchem" class="relative pt-1">
+          <!-- PUBCHEM SEARCH BAR (FIXED IN HEADER) -->
+          <form id="form-pubchem" class="relative">
             <div class="relative flex items-center">
-              <input id="input-pubchem" type="text" placeholder="Es. Aspirin, Ibuprofen, Toluene, Acetone, Caffeine..." class="w-full bg-white/5 border border-white/15 rounded-2xl pl-11 pr-32 py-3.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all font-sans" />
-              <i data-lucide="search" class="w-5 h-5 text-cyan-400 absolute left-3.5"></i>
-              <button id="btn-pubchem-submit" type="submit" class="absolute right-2 px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs transition-all active:scale-95 flex items-center gap-1.5 shadow-md">
-                <span>Cerca su PubChem</span>
+              <input id="input-pubchem" type="text" placeholder="Cerca molecola PubChem (es. Aspirina, Caffeina)..." class="w-full bg-zinc-900/90 border border-zinc-700/80 rounded-xl pl-9 pr-20 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 font-sans" />
+              <i data-lucide="search" class="w-3.5 h-3.5 text-cyan-400 absolute left-3"></i>
+              <button id="btn-pubchem-submit" type="submit" class="absolute right-1 px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-[11px] transition-all active:scale-95 flex items-center gap-1 shadow-md cursor-pointer">
+                <span>Cerca</span>
               </button>
             </div>
-            <div id="pubchem-status-msg" class="hidden flex items-center gap-2 mt-2.5 text-xs text-red-400 bg-red-950/50 border border-red-500/40 rounded-xl p-3 font-mono">
-              <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
+            <div id="pubchem-status-msg" class="hidden flex items-center gap-2 mt-1.5 text-[11px] text-red-400 bg-red-950/50 border border-red-500/40 rounded-lg p-2 font-mono">
+              <i data-lucide="alert-circle" class="w-3.5 h-3.5 shrink-0"></i>
               <span id="txt-pubchem-error"></span>
             </div>
           </form>
-        </div>
 
-        <!-- Quick Search Suggestion Chips -->
-        <div>
-          <h3 class="text-xs font-mono text-zinc-400 uppercase tracking-wider mb-2.5">Membri Rapidi / Ricerche Popolari</h3>
-          <div class="flex flex-wrap items-center gap-2">
-            <button data-quicksearch="Aspirin" class="btn-quick-search text-xs font-mono px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all flex items-center gap-1.5 active:scale-95">
-              <span>Aspirina</span>
+          <!-- PULSANTI VELOCI (QUICK ACTIONS ROW) -->
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
+            <button data-cam="front" class="btn-cam-preset text-[11px] font-mono px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-300 hover:text-white hover:border-cyan-400 transition-all shrink-0 flex items-center gap-1 active:scale-95 cursor-pointer" title="Vista Frontale">
+              <i data-lucide="eye" class="w-3 h-3 text-cyan-400"></i>
+              <span>Frontale</span>
             </button>
-            <button data-quicksearch="Acetone" class="btn-quick-search text-xs font-mono px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all flex items-center gap-1.5 active:scale-95">
-              <span>Acetone</span>
+            <button data-cam="top" class="btn-cam-preset text-[11px] font-mono px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-300 hover:text-white hover:border-cyan-400 transition-all shrink-0 flex items-center gap-1 active:scale-95 cursor-pointer" title="Vista Superiore">
+              <i data-lucide="arrow-up-circle" class="w-3 h-3 text-cyan-400"></i>
+              <span>Superiore</span>
             </button>
-            <button data-quicksearch="Ibuprofen" class="btn-quick-search text-xs font-mono px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all flex items-center gap-1.5 active:scale-95">
-              <span>Ibuprofene</span>
+            <button id="btn-reset-view" class="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-300 hover:text-white hover:border-cyan-400 transition-all shrink-0 flex items-center gap-1 active:scale-95 cursor-pointer" title="Reset Vista Camera">
+              <i data-lucide="refresh-cw" class="w-3 h-3 text-amber-400"></i>
+              <span>Reset Vista</span>
             </button>
-            <button data-quicksearch="Paracetamol" class="btn-quick-search text-xs font-mono px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all flex items-center gap-1.5 active:scale-95">
-              <span>Paracetamolo</span>
+            <button id="btn-autorotate-toggle" class="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-cyan-500/20 border border-cyan-400 text-cyan-300 transition-all shrink-0 flex items-center gap-1 active:scale-95 cursor-pointer shadow-[0_0_10px_rgba(0,240,255,0.2)]" title="Toggle Auto-Rotazione">
+              <i data-lucide="rotate-cw" class="w-3 h-3 text-emerald-400"></i>
+              <span id="txt-autorotate-state">Auto-Ruota: On</span>
             </button>
-            <button data-quicksearch="Toluene" class="btn-quick-search text-xs font-mono px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all flex items-center gap-1.5 active:scale-95">
-              <span>Toluene</span>
-            </button>
-            <button data-quicksearch="Ethanol" class="btn-quick-search text-xs font-mono px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all flex items-center gap-1.5 active:scale-95">
-              <span>Etanolo</span>
-            </button>
-            <button data-quicksearch="Glucose" class="btn-quick-search text-xs font-mono px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all flex items-center gap-1.5 active:scale-95">
-              <span>Glucosio</span>
-            </button>
-            <button data-quicksearch="TNT" class="btn-quick-search text-xs font-mono px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all flex items-center gap-1.5 active:scale-95">
-              <span>Trinitrotoluene (TNT)</span>
-            </button>
-            <button data-quicksearch="Penicillin" class="btn-quick-search text-xs font-mono px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all flex items-center gap-1.5 active:scale-95">
-              <span>Penicillina</span>
-            </button>
-            <button data-quicksearch="Benzene" class="btn-quick-search text-xs font-mono px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all flex items-center gap-1.5 active:scale-95">
-              <span>Benzene</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- TAB 2: COMPLETE PERIODIC TABLE (118 ELEMENTS) -->
-      <div id="tab-sec-periodic" class="hidden space-y-4">
-        <div class="flex items-center justify-between">
-          <h3 class="text-xs font-mono text-zinc-400 uppercase tracking-wider">Tavola Periodica (118 Elementi)</h3>
-          <span class="text-[10px] font-mono text-cyan-400">Tocca per generare atomo 3D</span>
-        </div>
-
-        <!-- Search / Filter -->
-        <input id="input-ptable-search" type="text" placeholder="Filtra per simbolo, nome o N° atomico..." class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500/60 font-mono" />
-
-        <!-- 118 Elements Grid -->
-        <div id="ptable-grid" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-1.5 max-h-[320px] overflow-y-auto p-1 bg-white/[0.02] rounded-2xl border border-white/10 no-scrollbar"></div>
-      </div>
-
-      <!-- TAB 3: RENDERING & DISPLAY MODES -->
-      <div id="tab-sec-display" class="hidden space-y-5">
-        <div>
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="text-xs font-mono text-zinc-400 uppercase tracking-wider">Modalità di Rendering 3D</h3>
-            <span class="text-[10px] font-mono text-cyan-400">Seleziona uno stile</span>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <button data-render="ball-and-stick" class="btn-render-mode text-left p-3.5 rounded-2xl border transition-all relative group">
-              <div class="flex items-center justify-between mb-1">
-                <div class="font-bold text-sm text-white">1. Ball & Stick</div>
-                <span class="render-badge hidden text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-400 text-black font-bold flex items-center gap-1">
-                  <i data-lucide="check" class="w-3 h-3"></i> SELEZIONATO
-                </span>
-              </div>
-              <div class="text-[11px] text-zinc-400">Sfere CPK atomiche e legami cilindrici traslucidi.</div>
-            </button>
-
-            <button data-render="space-filling" class="btn-render-mode text-left p-3.5 rounded-2xl border transition-all relative group">
-              <div class="flex items-center justify-between mb-1">
-                <div class="font-bold text-sm text-white">2. Space Filling / VdW</div>
-                <span class="render-badge hidden text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-400 text-black font-bold flex items-center gap-1">
-                  <i data-lucide="check" class="w-3 h-3"></i> SELEZIONATO
-                </span>
-              </div>
-              <div class="text-[11px] text-zinc-400">Ingombro sterico reale con raggi di Van der Waals effettivi.</div>
-            </button>
-
-            <button data-render="wireframe" class="btn-render-mode text-left p-3.5 rounded-2xl border transition-all relative group">
-              <div class="flex items-center justify-between mb-1">
-                <div class="font-bold text-sm text-white">3. Wireframe / Scheletrico</div>
-                <span class="render-badge hidden text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-400 text-black font-bold flex items-center gap-1">
-                  <i data-lucide="check" class="w-3 h-3"></i> SELEZIONATO
-                </span>
-              </div>
-              <div class="text-[11px] text-zinc-400">Solo linee vettoriali e scheletro dei legami.</div>
-            </button>
-
-            <button data-render="surface" class="btn-render-mode text-left p-3.5 rounded-2xl border transition-all relative group">
-              <div class="flex items-center justify-between mb-1">
-                <div class="font-bold text-sm text-white">4. Approx. Surface</div>
-                <span class="render-badge hidden text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-400 text-black font-bold flex items-center gap-1">
-                  <i data-lucide="check" class="w-3 h-3"></i> SELEZIONATO
-                </span>
-              </div>
-              <div class="text-[11px] text-zinc-400">Superficie solvente accessibile e involucro 3D.</div>
-            </button>
-
-            <button data-render="cpk-electrostatic" class="btn-render-mode text-left p-3.5 rounded-2xl border transition-all relative group sm:col-span-2">
-              <div class="flex items-center justify-between mb-1">
-                <div class="font-bold text-sm text-white">5. CPK Electrostatic</div>
-                <span class="render-badge hidden text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-400 text-black font-bold flex items-center gap-1">
-                  <i data-lucide="check" class="w-3 h-3"></i> SELEZIONATO
-                </span>
-              </div>
-              <div class="text-[11px] text-zinc-400">Mappa di carica elettrostatica basata sull'elettronegatività CPK.</div>
+            <button id="btn-labels-toggle" class="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-cyan-500/20 border border-cyan-400 text-cyan-300 transition-all shrink-0 flex items-center gap-1 active:scale-95 cursor-pointer shadow-[0_0_10px_rgba(0,240,255,0.2)]" title="Toggle Etichette Atomiche">
+              <i data-lucide="tag" class="w-3 h-3 text-purple-400"></i>
+              <span id="txt-labels-state">Etichette: On</span>
             </button>
           </div>
         </div>
 
-        <!-- Toggles -->
-        <div class="space-y-3 bg-white/5 border border-white/10 rounded-2xl p-3.5">
-          <div class="flex items-center justify-between">
+        <!-- AREA CONTENUTO SCORREVOLE (SOLO QUESTA SCORRE) -->
+        <div id="sheet-content-body" class="flex-1 overflow-y-auto px-4 pt-3 pb-8 no-scrollbar space-y-6">
+
+          <!-- TAB 1: MOTORE DI RICERCA UNIVERSALE (PRESET & RICERCHE POPOLARI) -->
+          <div id="tab-sec-molecules" class="space-y-4">
+            <!-- Quick Search Suggestion Chips -->
             <div>
-              <div class="text-sm font-semibold text-white">Etichette Atomi CPK</div>
-              <div class="text-xs text-zinc-400">Mostra simboli chimici in sovrimpressione</div>
+              <h3 class="text-xs font-mono text-zinc-400 uppercase tracking-wider mb-2.5">Preset Rapidi / Molecole Popolari</h3>
+              <div class="flex flex-wrap items-center gap-2">
+                <button data-quicksearch="Aspirin" class="btn-quick-search text-xs font-mono px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer">
+                  <span>Aspirina</span>
+                </button>
+                <button data-quicksearch="Acetone" class="btn-quick-search text-xs font-mono px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer">
+                  <span>Acetone</span>
+                </button>
+                <button data-quicksearch="Ibuprofen" class="btn-quick-search text-xs font-mono px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer">
+                  <span>Ibuprofene</span>
+                </button>
+                <button data-quicksearch="Paracetamol" class="btn-quick-search text-xs font-mono px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer">
+                  <span>Paracetamolo</span>
+                </button>
+                <button data-quicksearch="Toluene" class="btn-quick-search text-xs font-mono px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer">
+                  <span>Toluene</span>
+                </button>
+                <button data-quicksearch="Ethanol" class="btn-quick-search text-xs font-mono px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer">
+                  <span>Etanolo</span>
+                </button>
+                <button data-quicksearch="Glucose" class="btn-quick-search text-xs font-mono px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer">
+                  <span>Glucosio</span>
+                </button>
+                <button data-quicksearch="TNT" class="btn-quick-search text-xs font-mono px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer">
+                  <span>Trinitrotoluene (TNT)</span>
+                </button>
+                <button data-quicksearch="Penicillin" class="btn-quick-search text-xs font-mono px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer">
+                  <span>Penicillina</span>
+                </button>
+                <button data-quicksearch="Benzene" class="btn-quick-search text-xs font-mono px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer">
+                  <span>Benzene</span>
+                </button>
+              </div>
             </div>
-            <button id="toggle-labels" class="w-12 h-6 rounded-full bg-cyan-500 transition-all relative">
-              <div id="dot-labels" class="w-5 h-5 rounded-full bg-white absolute top-0.5 left-6 transition-all"></div>
-            </button>
           </div>
 
-          <div class="w-full h-px bg-white/10"></div>
+          <!-- TAB 2: COMPLETE PERIODIC TABLE (118 ELEMENTS) -->
+          <div id="tab-sec-periodic" class="hidden space-y-4">
+            <div class="sticky top-0 z-10 bg-zinc-950/95 backdrop-blur-xl -mx-4 px-4 pt-1 pb-3 border-b border-white/10 space-y-2">
+              <div class="flex items-center justify-between">
+                <h3 class="text-xs font-mono text-zinc-400 uppercase tracking-wider">Tavola Periodica (118 Elementi)</h3>
+                <span class="text-[10px] font-mono text-cyan-400">Tocca per generare atomo 3D</span>
+              </div>
+              <!-- Search / Filter -->
+              <input id="input-ptable-search" type="text" placeholder="Filtra per simbolo, nome o N° atomico..." class="w-full bg-zinc-900/90 border border-zinc-700/80 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 font-mono" />
+            </div>
 
-          <div class="flex items-center justify-between">
+            <!-- 118 Elements Grid -->
+            <div id="ptable-grid" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-1.5 p-1 bg-white/[0.02] rounded-2xl border border-white/10 no-scrollbar"></div>
+          </div>
+
+          <!-- TAB 3: RENDERING & DISPLAY MODES -->
+          <div id="tab-sec-display" class="hidden space-y-5">
             <div>
-              <div class="text-sm font-semibold text-white">Lunghezza Legami (Å)</div>
-              <div class="text-xs text-zinc-400">Mostra distanze interatomiche sui legami</div>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-xs font-mono text-zinc-400 uppercase tracking-wider">Modalità di Rendering 3D</h3>
+                <span class="text-[10px] font-mono text-cyan-400">Seleziona uno stile</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <button data-render="ball-and-stick" class="btn-render-mode text-left p-3.5 rounded-2xl border transition-all relative group cursor-pointer">
+                  <div class="flex items-center justify-between mb-1">
+                    <div class="font-bold text-sm text-white">1. Ball & Stick</div>
+                    <span class="render-badge hidden text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-400 text-black font-bold flex items-center gap-1">
+                      <i data-lucide="check" class="w-3 h-3"></i> ATTIVO
+                    </span>
+                  </div>
+                  <div class="text-[11px] text-zinc-400">Sfere CPK atomiche e legami cilindrici traslucidi.</div>
+                </button>
+
+                <button data-render="space-filling" class="btn-render-mode text-left p-3.5 rounded-2xl border transition-all relative group cursor-pointer">
+                  <div class="flex items-center justify-between mb-1">
+                    <div class="font-bold text-sm text-white">2. Space Filling / VdW</div>
+                    <span class="render-badge hidden text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-400 text-black font-bold flex items-center gap-1">
+                      <i data-lucide="check" class="w-3 h-3"></i> ATTIVO
+                    </span>
+                  </div>
+                  <div class="text-[11px] text-zinc-400">Ingombro sterico reale con raggi di Van der Waals effettivi.</div>
+                </button>
+
+                <button data-render="wireframe" class="btn-render-mode text-left p-3.5 rounded-2xl border transition-all relative group cursor-pointer">
+                  <div class="flex items-center justify-between mb-1">
+                    <div class="font-bold text-sm text-white">3. Wireframe / Scheletrico</div>
+                    <span class="render-badge hidden text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-400 text-black font-bold flex items-center gap-1">
+                      <i data-lucide="check" class="w-3 h-3"></i> ATTIVO
+                    </span>
+                  </div>
+                  <div class="text-[11px] text-zinc-400">Solo linee vettoriali e scheletro dei legami.</div>
+                </button>
+
+                <button data-render="surface" class="btn-render-mode text-left p-3.5 rounded-2xl border transition-all relative group cursor-pointer">
+                  <div class="flex items-center justify-between mb-1">
+                    <div class="font-bold text-sm text-white">4. Approx. Surface</div>
+                    <span class="render-badge hidden text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-400 text-black font-bold flex items-center gap-1">
+                      <i data-lucide="check" class="w-3 h-3"></i> ATTIVO
+                    </span>
+                  </div>
+                  <div class="text-[11px] text-zinc-400">Superficie solvente accessibile e involucro 3D.</div>
+                </button>
+
+                <button data-render="cpk-electrostatic" class="btn-render-mode text-left p-3.5 rounded-2xl border transition-all relative group sm:col-span-2 cursor-pointer">
+                  <div class="flex items-center justify-between mb-1">
+                    <div class="font-bold text-sm text-white">5. CPK Electrostatic</div>
+                    <span class="render-badge hidden text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-400 text-black font-bold flex items-center gap-1">
+                      <i data-lucide="check" class="w-3 h-3"></i> ATTIVO
+                    </span>
+                  </div>
+                  <div class="text-[11px] text-zinc-400">Mappa di carica elettrostatica basata sull'elettronegatività CPK.</div>
+                </button>
+              </div>
             </div>
-            <button id="toggle-bonds-len" class="w-12 h-6 rounded-full bg-zinc-700 transition-all relative">
-              <div id="dot-bonds-len" class="w-5 h-5 rounded-full bg-white absolute top-0.5 left-0.5 transition-all"></div>
-            </button>
+
+            <!-- Interruttori e Toggle Strumenti con Badge Sincronizzati 1:1 -->
+            <div class="space-y-3 bg-white/5 border border-white/10 rounded-2xl p-3.5">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="text-sm font-semibold text-white">Etichette Atomi CPK</div>
+                  <div class="text-xs text-zinc-400">Mostra simboli chimici in sovrimpressione</div>
+                </div>
+                <button id="toggle-labels" class="px-3.5 py-1.5 rounded-xl border border-cyan-400 bg-cyan-500/20 text-cyan-300 transition-all flex items-center gap-2 cursor-pointer shadow-[0_0_12px_rgba(0,240,255,0.25)]">
+                  <span class="status-badge text-[9px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-400 text-black font-bold">ATTIVO</span>
+                </button>
+              </div>
+
+              <div class="w-full h-px bg-white/10"></div>
+
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="text-sm font-semibold text-white">Lunghezza Legami (Å)</div>
+                  <div class="text-xs text-zinc-400">Mostra distanze interatomiche sui legami</div>
+                </div>
+                <button id="toggle-bonds-len" class="px-3.5 py-1.5 rounded-xl border border-white/10 bg-white/5 text-zinc-400 hover:text-zinc-200 transition-all flex items-center gap-2 cursor-pointer">
+                  <span class="status-badge text-[9px] font-mono px-2.5 py-0.5 rounded-full bg-zinc-800 text-zinc-400 font-bold">DISATTIVATO</span>
+                </button>
+              </div>
+
+              <div class="w-full h-px bg-white/10"></div>
+
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="text-sm font-semibold text-white">Auto-Rotazione 3D</div>
+                  <div class="text-xs text-zinc-400">Rotazione automatica continua della vista</div>
+                </div>
+                <button id="toggle-autorotate" class="px-3.5 py-1.5 rounded-xl border border-cyan-400 bg-cyan-500/20 text-cyan-300 transition-all flex items-center gap-2 cursor-pointer shadow-[0_0_12px_rgba(0,240,255,0.25)]">
+                  <span class="status-badge text-[9px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-400 text-black font-bold">ATTIVO</span>
+                </button>
+              </div>
+            </div>
           </div>
+
+          <!-- TAB 4: TOOLS & GEOMETRIC ANALYSIS -->
+          <div id="tab-sec-analysis" class="hidden space-y-5">
+            <!-- Interactive Tools Grid -->
+            <div>
+              <h3 class="text-xs font-mono text-zinc-400 uppercase tracking-wider mb-2.5">Strumenti di Misurazione 3D</h3>
+              <div class="grid grid-cols-3 gap-2">
+                <button id="tool-inspect" class="btn-tool-mode p-3 rounded-2xl border border-cyan-500/60 bg-cyan-950/40 text-cyan-300 flex flex-col items-center justify-center text-center gap-1.5 cursor-pointer">
+                  <i data-lucide="pointer" class="w-5 h-5"></i>
+                  <span class="text-xs font-semibold">Ispeziona</span>
+                </button>
+                <button id="tool-distance" class="btn-tool-mode p-3 rounded-2xl border border-white/10 bg-white/5 text-zinc-300 hover:text-white flex flex-col items-center justify-center text-center gap-1.5 cursor-pointer">
+                  <i data-lucide="ruler" class="w-5 h-5"></i>
+                  <span class="text-xs font-semibold">Distanza (Å)</span>
+                </button>
+                <button id="tool-angle" class="btn-tool-mode p-3 rounded-2xl border border-white/10 bg-white/5 text-zinc-300 hover:text-white flex flex-col items-center justify-center text-center gap-1.5 cursor-pointer">
+                  <i data-lucide="triangle" class="w-5 h-5"></i>
+                  <span class="text-xs font-semibold">Angolo (°)</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Newman Projections Card -->
+            <div class="bg-gradient-to-br from-zinc-900 via-zinc-900 to-cyan-950/40 border border-cyan-500/30 rounded-2xl p-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <i data-lucide="eye" class="w-5 h-5 text-cyan-400"></i>
+                  <h3 class="font-bold text-sm text-white">Riconoscimento Proiezione Newman</h3>
+                </div>
+                <span id="txt-newman-card-badge" class="text-[10px] font-mono px-2.5 py-0.5 rounded-full font-bold uppercase bg-zinc-800 text-zinc-400">INATTIVA</span>
+              </div>
+              <p id="txt-newman-card-desc" class="text-xs text-zinc-400 leading-relaxed">
+                Ruota la molecola fino ad allineare la visuale lungo l'asse di un legame C–C per sbloccare l'analisi automatica della conformazione (sfalsata vs eclissata).
+              </p>
+            </div>
+
+            <!-- Electrostatic Potential Simulated Surface Card -->
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-2">
+              <div class="flex items-center justify-between">
+                <h3 class="font-bold text-sm text-white flex items-center gap-2">
+                  <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i>
+                  <span>Potenziale Elettrostatico (ESP)</span>
+                </h3>
+                <span class="text-[10px] font-mono text-amber-400 px-2 py-0.5 rounded bg-amber-950/60 border border-amber-500/30">Visual Approx.</span>
+              </div>
+              <p class="text-xs text-zinc-400 leading-relaxed">
+                Mappatura qualitativa basata sulle elettronegatività degli atomi (rosso = regione ricca di elettroni / nucleofila, blu = povera di elettroni / elettrofila).
+              </p>
+            </div>
+          </div>
+
+          <!-- TAB 5: CHEMICAL DETAILS & CPK LEGEND -->
+          <div id="tab-sec-details" class="hidden space-y-5">
+            <div>
+              <h3 class="text-xs font-mono text-zinc-400 uppercase tracking-wider mb-2.5">Composizione Elementare & Raggi CPK</h3>
+              <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-white/5 text-zinc-400 font-mono text-[10px] uppercase">
+                    <tr>
+                      <th class="p-2.5 pl-3">Elem</th>
+                      <th class="p-2.5">Atomi</th>
+                      <th class="p-2.5">Massa %</th>
+                      <th class="p-2.5 pr-3">Elettroneg.</th>
+                    </tr>
+                  </thead>
+                  <tbody id="cpk-table-body" class="divide-y divide-white/5 font-mono"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Description Card -->
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-2">
+              <h3 class="font-bold text-sm text-white">Descrizione Scientifica</h3>
+              <p id="txt-mol-desc" class="text-xs text-zinc-400 leading-relaxed">Nessuna descrizione disponibile.</p>
+            </div>
+          </div>
+
         </div>
       </div>
 
-      <!-- TAB 4: TOOLS & GEOMETRIC ANALYSIS -->
-      <div id="tab-sec-analysis" class="hidden space-y-5">
-        <!-- Interactive Tools Grid -->
-        <div>
-          <h3 class="text-xs font-mono text-zinc-400 uppercase tracking-wider mb-2.5">Strumenti di Misurazione 3D</h3>
-          <div class="grid grid-cols-3 gap-2">
-            <button id="tool-inspect" class="btn-tool-mode p-3 rounded-2xl border border-cyan-500/60 bg-cyan-950/40 text-cyan-300 flex flex-col items-center justify-center text-center gap-1.5">
-              <i data-lucide="pointer" class="w-5 h-5"></i>
-              <span class="text-xs font-semibold">Ispeziona</span>
-            </button>
-            <button id="tool-distance" class="btn-tool-mode p-3 rounded-2xl border border-white/10 bg-white/5 text-zinc-300 hover:text-white flex flex-col items-center justify-center text-center gap-1.5">
-              <i data-lucide="ruler" class="w-5 h-5"></i>
-              <span class="text-xs font-semibold">Distanza (Å)</span>
-            </button>
-            <button id="tool-angle" class="btn-tool-mode p-3 rounded-2xl border border-white/10 bg-white/5 text-zinc-300 hover:text-white flex flex-col items-center justify-center text-center gap-1.5">
-              <i data-lucide="triangle" class="w-5 h-5"></i>
-              <span class="text-xs font-semibold">Angolo (°)</span>
-            </button>
-          </div>
-        </div>
+      <!-- NAVIGATION BAR (ALWAYS FISICALLY BELOW THE BOTTOM SHEET IN FLEX CONTAINER) -->
+      <div class="h-16 flex-none bg-black/95 backdrop-blur-2xl border-t border-white/10 flex items-center justify-around px-2 pb-[env(safe-area-inset-bottom)] pointer-events-auto shadow-[0_-8px_30px_rgba(0,0,0,0.9)] z-30">
+        <nav class="w-full max-w-md mx-auto flex items-center justify-around px-1">
+          <button data-tab="molecules" class="btn-tab-nav flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 bg-gradient-to-b from-cyan-500/20 to-cyan-500/5 text-cyan-400 border border-cyan-500/30 shadow-[0_0_12px_rgba(0,240,255,0.2)] cursor-pointer">
+            <i data-lucide="atom" class="w-4 h-4 mb-0.5"></i>
+            <span class="text-[10px] font-medium">Molecole</span>
+          </button>
 
-        <!-- Newman Projections Card -->
-        <div class="bg-gradient-to-br from-zinc-900 via-zinc-900 to-cyan-950/40 border border-cyan-500/30 rounded-2xl p-4 space-y-3">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <i data-lucide="eye" class="w-5 h-5 text-cyan-400"></i>
-              <h3 class="font-bold text-sm text-white">Riconoscimento Proiezione Newman</h3>
-            </div>
-            <span id="txt-newman-card-badge" class="text-[10px] font-mono px-2.5 py-0.5 rounded-full font-bold uppercase bg-zinc-800 text-zinc-400">INATTIVA</span>
-          </div>
-          <p id="txt-newman-card-desc" class="text-xs text-zinc-400 leading-relaxed">
-            Ruota la molecola fino ad allineare la visuale lungo l'asse di un legame C–C per sbloccare l'analisi automatica della conformazione (sfalsata vs eclissata).
-          </p>
-        </div>
+          <button data-tab="periodic" class="btn-tab-nav flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 text-zinc-400 hover:text-zinc-200 cursor-pointer">
+            <i data-lucide="grid" class="w-4 h-4 mb-0.5"></i>
+            <span class="text-[10px] font-medium">Tavola (118)</span>
+          </button>
 
-        <!-- Electrostatic Potential Simulated Surface Card -->
-        <div class="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-2">
-          <div class="flex items-center justify-between">
-            <h3 class="font-bold text-sm text-white flex items-center gap-2">
-              <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i>
-              <span>Potenziale Elettrostatico (ESP)</span>
-            </h3>
-            <span class="text-[10px] font-mono text-amber-400 px-2 py-0.5 rounded bg-amber-950/60 border border-amber-500/30">Visual Approx.</span>
-          </div>
-          <p class="text-xs text-zinc-400 leading-relaxed">
-            Mappatura qualitativa basata sulle elettronegatività degli atomi (rosso = regione ricca di elettroni / nucleofila, blu = povera di elettroni / elettrofila).
-          </p>
-        </div>
-      </div>
+          <button data-tab="display" class="btn-tab-nav flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 text-zinc-400 hover:text-zinc-200 cursor-pointer">
+            <i data-lucide="eye" class="w-4 h-4 mb-0.5"></i>
+            <span class="text-[10px] font-medium">Render</span>
+          </button>
 
-      <!-- TAB 5: CHEMICAL DETAILS & CPK LEGEND -->
-      <div id="tab-sec-details" class="hidden space-y-5">
-        <div>
-          <h3 class="text-xs font-mono text-zinc-400 uppercase tracking-wider mb-2.5">Composizione Elementare & Raggi CPK</h3>
-          <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-white/5 text-zinc-400 font-mono text-[10px] uppercase">
-                <tr>
-                  <th class="p-2.5 pl-3">Elem</th>
-                  <th class="p-2.5">Atomi</th>
-                  <th class="p-2.5">Massa %</th>
-                  <th class="p-2.5 pr-3">Elettroneg.</th>
-                </tr>
-              </thead>
-              <tbody id="cpk-table-body" class="divide-y divide-white/5 font-mono"></tbody>
-            </table>
-          </div>
-        </div>
+          <button data-tab="analysis" class="btn-tab-nav flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 text-zinc-400 hover:text-zinc-200 cursor-pointer">
+            <i data-lucide="activity" class="w-4 h-4 mb-0.5"></i>
+            <span class="text-[10px] font-medium">Calcoli</span>
+          </button>
 
-        <!-- Description Card -->
-        <div class="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-2">
-          <h3 class="font-bold text-sm text-white">Descrizione Scientifica</h3>
-          <p id="txt-mol-desc" class="text-xs text-zinc-400 leading-relaxed">Nessuna descrizione disponibile.</p>
-        </div>
+          <button data-tab="details" class="btn-tab-nav flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 text-zinc-400 hover:text-zinc-200 cursor-pointer">
+            <i data-lucide="info" class="w-4 h-4 mb-0.5"></i>
+            <span class="text-[10px] font-medium">Info</span>
+          </button>
+        </nav>
       </div>
 
     </div>
-  </div>
 
-  <!-- FIXED THUMB NAVIGATION BAR (iPhone 15 Pro Safe Bottom) -->
-  <div class="fixed bottom-0 left-0 right-0 z-40 pointer-events-none safe-pad-bottom px-3 pb-2 flex justify-center">
-    <nav class="pointer-events-auto w-full max-w-md bg-black/85 backdrop-blur-2xl border border-white/15 rounded-3xl p-1.5 flex items-center justify-around shadow-[0_10px_35px_rgba(0,0,0,0.9)]">
-      <button data-tab="molecules" class="btn-tab-nav flex flex-col items-center justify-center flex-1 py-1.5 rounded-2xl transition-all active:scale-95 bg-gradient-to-b from-cyan-500/20 to-cyan-500/5 text-cyan-400 border border-cyan-500/30 shadow-[0_0_12px_rgba(0,240,255,0.2)]">
-        <i data-lucide="atom" class="w-4 h-4 mb-0.5"></i>
-        <span class="text-[10px] font-medium">Molecole</span>
-      </button>
-
-      <button data-tab="periodic" class="btn-tab-nav flex flex-col items-center justify-center flex-1 py-1.5 rounded-2xl transition-all active:scale-95 text-zinc-400 hover:text-zinc-200">
-        <i data-lucide="grid" class="w-4 h-4 mb-0.5"></i>
-        <span class="text-[10px] font-medium">Tavola (118)</span>
-      </button>
-
-      <button data-tab="display" class="btn-tab-nav flex flex-col items-center justify-center flex-1 py-1.5 rounded-2xl transition-all active:scale-95 text-zinc-400 hover:text-zinc-200">
-        <i data-lucide="eye" class="w-4 h-4 mb-0.5"></i>
-        <span class="text-[10px] font-medium">Render</span>
-      </button>
-
-      <button data-tab="analysis" class="btn-tab-nav flex flex-col items-center justify-center flex-1 py-1.5 rounded-2xl transition-all active:scale-95 text-zinc-400 hover:text-zinc-200">
-        <i data-lucide="activity" class="w-4 h-4 mb-0.5"></i>
-        <span class="text-[10px] font-medium">Analisi 3D</span>
-      </button>
-
-      <button data-tab="details" class="btn-tab-nav flex flex-col items-center justify-center flex-1 py-1.5 rounded-2xl transition-all active:scale-95 text-zinc-400 hover:text-zinc-200">
-        <i data-lucide="info" class="w-4 h-4 mb-0.5"></i>
-        <span class="text-[10px] font-medium">Scheda</span>
-      </button>
-    </nav>
   </div>
 
   <!-- APPLICATION LOGIC -->
@@ -1462,26 +1510,48 @@
     }
 
     /* ==========================================================================
-       10. TOUCH-DRIVEN BOTTOM SHEET SYSTEM (APPLE iOS DRAWER WITH TRUE SNAP)
+       10. TOUCH-DRIVEN BOTTOM SHEET SYSTEM (COLLAPSIBLE OFF-SCREEN DRAWER)
        ========================================================================== */
     const bottomSheet = document.getElementById('bottom-sheet');
     const dragHandle = document.getElementById('sheet-drag-handle');
     let startY = 0;
-    let startHeight = 65;
+    let startHeight = 0;
     let dragStartTime = 0;
     let isDraggingSheet = false;
 
     function setSheetSnapState(state) {
-      sheetSnapState = state;
-      bottomSheet.classList.remove('dragging');
-
-      if (state === 'min') {
-        bottomSheet.style.height = '65px';
+      if (state === 'min' || state === 'hidden') {
+        sheetSnapState = 'hidden';
+        bottomSheet.style.transform = 'translateY(115%)';
+        bottomSheet.style.opacity = '0';
+        bottomSheet.style.pointerEvents = 'none';
       } else if (state === 'half') {
-        bottomSheet.style.height = '48vh';
+        sheetSnapState = 'half';
+        bottomSheet.style.height = '58dvh';
+        bottomSheet.style.transform = 'translateY(0)';
+        bottomSheet.style.opacity = '1';
+        bottomSheet.style.pointerEvents = 'auto';
       } else if (state === 'full') {
-        bottomSheet.style.height = '82vh';
+        sheetSnapState = 'full';
+        bottomSheet.style.height = '82dvh';
+        bottomSheet.style.transform = 'translateY(0)';
+        bottomSheet.style.opacity = '1';
+        bottomSheet.style.pointerEvents = 'auto';
       }
+    }
+
+    // Input focus handlers for Mobile Keyboard safety
+    const pubchemInputEl = document.getElementById('input-pubchem');
+    if (pubchemInputEl) {
+      pubchemInputEl.addEventListener('focus', () => {
+        if (sheetSnapState === 'hidden') setSheetSnapState('half');
+      });
+    }
+    const ptableInputEl = document.getElementById('input-ptable-search');
+    if (ptableInputEl) {
+      ptableInputEl.addEventListener('focus', () => {
+        if (sheetSnapState === 'hidden') setSheetSnapState('half');
+      });
     }
 
     dragHandle.addEventListener('pointerdown', (e) => {
@@ -1496,9 +1566,8 @@
     dragHandle.addEventListener('pointermove', (e) => {
       if (!isDraggingSheet) return;
       const deltaY = startY - e.clientY;
-      const minH = 65;
-      const maxH = window.innerHeight * 0.85;
-      const newHeight = Math.max(minH, Math.min(maxH, startHeight + deltaY));
+      const maxH = window.innerHeight * 0.82;
+      const newHeight = Math.max(100, Math.min(maxH, startHeight + deltaY));
       bottomSheet.style.height = `${newHeight}px`;
     });
 
@@ -1509,30 +1578,30 @@
 
       const duration = Math.max(1, performance.now() - dragStartTime);
       const deltaY = e.clientY - startY; // positive deltaY = dragged DOWNWARD
-      const velocityY = deltaY / duration; // px/ms (>0.3 means fast drag down)
+      const velocityY = deltaY / duration; // px/ms (>0.25 means fast drag down)
 
-      const finalHeight = bottomSheet.getBoundingClientRect().height;
-      const vh = (finalHeight / window.innerHeight) * 100;
-
-      if (deltaY > 35 || velocityY > 0.3) {
-        // User pulled DOWNWARD: drop to next lower snap point and STAY there
-        if (vh > 60) {
+      if (deltaY > 35 || velocityY > 0.25) {
+        // User dragged DOWNWARD: close or collapse
+        if (sheetSnapState === 'full') {
           setSheetSnapState('half');
         } else {
-          setSheetSnapState('min');
+          setSheetSnapState('hidden');
         }
-      } else if (deltaY < -35 || velocityY < -0.3) {
-        // User pulled UPWARD: expand to next higher snap point
-        if (vh < 30) {
+      } else if (deltaY < -35 || velocityY < -0.25) {
+        // User dragged UPWARD: open or expand
+        if (sheetSnapState === 'hidden') {
           setSheetSnapState('half');
         } else {
           setSheetSnapState('full');
         }
       } else {
-        // Position-based snap point
-        if (vh < 25) setSheetSnapState('min');
-        else if (vh < 62) setSheetSnapState('half');
-        else setSheetSnapState('full');
+        if (deltaY > 20) {
+          if (sheetSnapState === 'full') setSheetSnapState('half');
+          else setSheetSnapState('hidden');
+        } else if (deltaY < -20) {
+          if (sheetSnapState === 'hidden') setSheetSnapState('half');
+          else setSheetSnapState('full');
+        }
       }
     }
 
@@ -1540,11 +1609,21 @@
     dragHandle.addEventListener('pointercancel', finishSheetDrag);
 
     dragHandle.addEventListener('click', (e) => {
+      if (e.target.closest('#btn-close-sheet')) return;
       if (Math.abs(e.clientY - startY) < 5) {
-        if (sheetSnapState === 'min') setSheetSnapState('half');
-        else setSheetSnapState('min');
+        if (sheetSnapState === 'hidden') setSheetSnapState('half');
+        else if (sheetSnapState === 'half') setSheetSnapState('hidden');
+        else setSheetSnapState('half');
       }
     });
+
+    const btnCloseSheet = document.getElementById('btn-close-sheet');
+    if (btnCloseSheet) {
+      btnCloseSheet.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setSheetSnapState('hidden');
+      });
+    }
 
     /* ==========================================================================
        11. PUBCHEM SEARCH & PRESET LOADER
@@ -1600,7 +1679,7 @@
         buildMolecule3D();
         updateHUD();
         updateDetailsTabTable();
-        setSheetSnapState('min');
+        setSheetSnapState('hidden');
       } catch (err) {
         errTxt.textContent = err.message || 'Molecola non trovata su PubChem, verifica il nome in inglese.';
         errBox.classList.remove('hidden');
@@ -1631,7 +1710,7 @@
 
       PRELOADED_MOLECULES.forEach(mol => {
         const btn = document.createElement('button');
-        btn.className = 'p-3 rounded-2xl oled-glass border border-white/10 text-left hover:border-cyan-500/50 transition-all active:scale-95';
+        btn.className = 'p-3 rounded-2xl oled-glass border border-white/10 text-left hover:border-cyan-500/50 transition-all active:scale-95 cursor-pointer';
         btn.innerHTML = `
           <div class="font-bold text-sm text-white truncate">${mol.name}</div>
           <div class="flex items-center justify-between text-xs font-mono text-cyan-400 mt-1">
@@ -1646,7 +1725,7 @@
           buildMolecule3D();
           updateHUD();
           updateDetailsTabTable();
-          setSheetSnapState('min');
+          setSheetSnapState('hidden');
         });
         grid.appendChild(btn);
       });
@@ -1658,7 +1737,7 @@
 
       ALL_118_ELEMENTS.forEach(el => {
         const btn = document.createElement('button');
-        btn.className = 'p-2 rounded-xl border border-white/10 bg-white/5 hover:border-cyan-400 text-center flex flex-col items-center justify-center transition-all active:scale-90';
+        btn.className = 'p-2 rounded-xl border border-white/10 bg-white/5 hover:border-cyan-400 text-center flex flex-col items-center justify-center transition-all active:scale-90 cursor-pointer';
         btn.style.borderColor = el.cpk + '40';
         btn.innerHTML = `
           <span class="text-[9px] font-mono text-zinc-500 leading-none">${el.z}</span>
@@ -1681,7 +1760,7 @@
           buildMolecule3D();
           updateHUD();
           updateDetailsTabTable();
-          setSheetSnapState('min');
+          setSheetSnapState('hidden');
         });
         grid.appendChild(btn);
       });
@@ -1750,12 +1829,19 @@
     document.querySelectorAll('.btn-tab-nav').forEach(btn => {
       btn.addEventListener('click', () => {
         const tab = btn.dataset.tab;
+
+        // If clicking active tab while sheet is visible, toggle closed
+        if (activeTabName === tab && sheetSnapState !== 'hidden') {
+          setSheetSnapState('hidden');
+          return;
+        }
+
         activeTabName = tab;
 
         document.querySelectorAll('.btn-tab-nav').forEach(b => {
-          b.className = 'btn-tab-nav flex flex-col items-center justify-center flex-1 py-1.5 rounded-2xl transition-all active:scale-95 text-zinc-400 hover:text-zinc-200';
+          b.className = 'btn-tab-nav flex flex-col items-center justify-center flex-1 py-1.5 rounded-2xl transition-all active:scale-95 text-zinc-400 hover:text-zinc-200 cursor-pointer';
         });
-        btn.className = 'btn-tab-nav flex flex-col items-center justify-center flex-1 py-1.5 rounded-2xl transition-all active:scale-95 bg-gradient-to-b from-cyan-500/20 to-cyan-500/5 text-cyan-400 border border-cyan-500/30 shadow-[0_0_12px_rgba(0,240,255,0.2)]';
+        btn.className = 'btn-tab-nav flex flex-col items-center justify-center flex-1 py-1.5 rounded-2xl transition-all active:scale-95 bg-gradient-to-b from-cyan-500/20 to-cyan-500/5 text-cyan-400 border border-cyan-500/30 shadow-[0_0_12px_rgba(0,240,255,0.2)] cursor-pointer';
 
         document.getElementById('tab-sec-molecules').classList.add('hidden');
         document.getElementById('tab-sec-periodic').classList.add('hidden');
@@ -1765,7 +1851,17 @@
 
         document.getElementById(`tab-sec-${tab}`).classList.remove('hidden');
 
-        if (sheetSnapState === 'min') setSheetSnapState('half');
+        const titleMap = {
+          'molecules': 'RICERCA MOLECOLE',
+          'periodic': 'TAVOLA PERIODICA',
+          'display': 'MODALITÀ RENDER',
+          'analysis': 'ANALISI 3D & MISURE',
+          'details': 'SCHEDA & MASSA'
+        };
+        const titleEl = document.getElementById('txt-sheet-tab-title');
+        if (titleEl) titleEl.textContent = titleMap[tab] || 'LABORATORIO MOLECOLARE';
+
+        setSheetSnapState('half');
       });
     });
 
@@ -1773,19 +1869,83 @@
       btn.addEventListener('click', () => setCameraPresetView(btn.dataset.cam));
     });
 
-    document.getElementById('btn-reset-view').addEventListener('click', () => {
-      setCameraPresetView('front');
-    });
+    const btnResetViewEl = document.getElementById('btn-reset-view');
+    if (btnResetViewEl) {
+      btnResetViewEl.addEventListener('click', () => {
+        setCameraPresetView('front');
+      });
+    }
+
+    function updateToggleUI(elementId, isActive) {
+      const btn = document.getElementById(elementId);
+      if (!btn) return;
+      const badge = btn.querySelector('.status-badge');
+      if (isActive) {
+        btn.className = "px-3.5 py-1.5 rounded-xl border border-cyan-400 bg-cyan-500/20 text-cyan-300 transition-all flex items-center gap-2 cursor-pointer shadow-[0_0_12px_rgba(0,240,255,0.25)]";
+        if (badge) {
+          badge.textContent = "ATTIVO";
+          badge.className = "status-badge text-[9px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-400 text-black font-bold shadow-md";
+        }
+      } else {
+        btn.className = "px-3.5 py-1.5 rounded-xl border border-white/10 bg-white/5 text-zinc-400 hover:text-zinc-200 transition-all flex items-center gap-2 cursor-pointer";
+        if (badge) {
+          badge.textContent = "DISATTIVATO";
+          badge.className = "status-badge text-[9px] font-mono px-2.5 py-0.5 rounded-full bg-zinc-800 text-zinc-400 font-bold";
+        }
+      }
+    }
+
+    function syncAllTogglesUI() {
+      updateToggleUI('toggle-labels', showLabels);
+      updateToggleUI('toggle-bonds-len', showBondLengthLabels);
+      updateToggleUI('toggle-autorotate', controls ? controls.autoRotate : true);
+
+      // Quick action buttons in bottom sheet header
+      const btnAutorotateEl = document.getElementById('btn-autorotate-toggle');
+      if (btnAutorotateEl && controls) {
+        const txt = document.getElementById('txt-autorotate-state');
+        if (txt) txt.textContent = `Auto-Ruota: ${controls.autoRotate ? 'On' : 'Off'}`;
+        btnAutorotateEl.className = controls.autoRotate
+          ? "text-[11px] font-mono px-2.5 py-1 rounded-lg bg-cyan-500/20 border border-cyan-400 text-cyan-300 transition-all shrink-0 flex items-center gap-1 active:scale-95 cursor-pointer shadow-[0_0_10px_rgba(0,240,255,0.2)]"
+          : "text-[11px] font-mono px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 transition-all shrink-0 flex items-center gap-1 active:scale-95 cursor-pointer";
+      }
+
+      const btnLabelsQuickEl = document.getElementById('btn-labels-toggle');
+      if (btnLabelsQuickEl) {
+        const txt = document.getElementById('txt-labels-state');
+        if (txt) txt.textContent = `Etichette: ${showLabels ? 'On' : 'Off'}`;
+        btnLabelsQuickEl.className = showLabels
+          ? "text-[11px] font-mono px-2.5 py-1 rounded-lg bg-cyan-500/20 border border-cyan-400 text-cyan-300 transition-all shrink-0 flex items-center gap-1 active:scale-95 cursor-pointer shadow-[0_0_10px_rgba(0,240,255,0.2)]"
+          : "text-[11px] font-mono px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 transition-all shrink-0 flex items-center gap-1 active:scale-95 cursor-pointer";
+      }
+    }
+
+    const btnAutorotateEl = document.getElementById('btn-autorotate-toggle');
+    if (btnAutorotateEl) {
+      btnAutorotateEl.addEventListener('click', () => {
+        controls.autoRotate = !controls.autoRotate;
+        syncAllTogglesUI();
+      });
+    }
+
+    const btnLabelsQuickEl = document.getElementById('btn-labels-toggle');
+    if (btnLabelsQuickEl) {
+      btnLabelsQuickEl.addEventListener('click', () => {
+        showLabels = !showLabels;
+        syncAllTogglesUI();
+      });
+    }
 
     function updateRenderModeUI() {
       document.querySelectorAll('.btn-render-mode').forEach(btn => {
         const mode = btn.dataset.render;
         const badge = btn.querySelector('.render-badge');
         if (mode === currentRenderMode) {
-          btn.className = 'btn-render-mode text-left p-3.5 rounded-2xl border-2 border-cyan-400 bg-cyan-500/15 text-white shadow-[0_0_20px_rgba(0,240,255,0.3)] ring-1 ring-cyan-400/50 transition-all relative group';
+          btn.className = 'btn-render-mode text-left p-3.5 rounded-2xl border-2 border-cyan-400 bg-cyan-500/20 text-white shadow-[0_0_20px_rgba(0,240,255,0.35)] ring-1 ring-cyan-400/50 transition-all relative group';
           if (badge) {
             badge.classList.remove('hidden');
             badge.className = 'render-badge text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-400 text-black font-bold flex items-center gap-1 shadow-md';
+            badge.innerHTML = `<i data-lucide="check" class="w-3 h-3"></i> ATTIVO`;
           }
         } else {
           btn.className = 'btn-render-mode text-left p-3.5 rounded-2xl border border-white/10 bg-white/5 opacity-60 text-zinc-400 hover:opacity-100 hover:text-white transition-all relative group';
@@ -1805,15 +1965,29 @@
       });
     });
 
-    document.getElementById('toggle-labels').addEventListener('click', () => {
-      showLabels = !showLabels;
-      document.getElementById('dot-labels').style.left = showLabels ? '1.5rem' : '0.125rem';
-    });
+    const toggleLabelsEl = document.getElementById('toggle-labels');
+    if (toggleLabelsEl) {
+      toggleLabelsEl.addEventListener('click', () => {
+        showLabels = !showLabels;
+        syncAllTogglesUI();
+      });
+    }
 
-    document.getElementById('toggle-bonds-len').addEventListener('click', () => {
-      showBondLengthLabels = !showBondLengthLabels;
-      document.getElementById('dot-bonds-len').style.left = showBondLengthLabels ? '1.5rem' : '0.125rem';
-    });
+    const toggleBondsLenEl = document.getElementById('toggle-bonds-len');
+    if (toggleBondsLenEl) {
+      toggleBondsLenEl.addEventListener('click', () => {
+        showBondLengthLabels = !showBondLengthLabels;
+        syncAllTogglesUI();
+      });
+    }
+
+    const toggleAutorotateEl = document.getElementById('toggle-autorotate');
+    if (toggleAutorotateEl) {
+      toggleAutorotateEl.addEventListener('click', () => {
+        controls.autoRotate = !controls.autoRotate;
+        syncAllTogglesUI();
+      });
+    }
 
     // Tool Selection
     document.getElementById('tool-inspect').addEventListener('click', () => {
@@ -1874,24 +2048,38 @@
       populatePresetsGrid();
       populatePeriodicTable();
       updateRenderModeUI();
+      syncAllTogglesUI();
       buildMolecule3D();
       updateHUD();
       renderLoop();
       lucide.createIcons();
+      setSheetSnapState('hidden');
 
       // Splash screen transition handler
       const splashScreen = document.getElementById('splash-screen');
       const enterBtn = document.getElementById('btn-enter-lab');
+      const homeBtn = document.getElementById('btn-open-splash');
 
-      if (enterBtn && splashScreen) {
-        enterBtn.addEventListener('click', () => {
-          splashScreen.classList.add('opacity-0', 'scale-105', 'pointer-events-none');
-          setTimeout(() => {
-            splashScreen.style.display = 'none';
-            window.dispatchEvent(new Event('resize'));
-          }, 700);
-        });
+      function hideSplashScreen() {
+        if (!splashScreen) return;
+        splashScreen.classList.add('opacity-0', 'scale-105', 'pointer-events-none');
+        setTimeout(() => {
+          splashScreen.style.display = 'none';
+          window.dispatchEvent(new Event('resize'));
+        }, 700);
+        setSheetSnapState('hidden');
       }
+
+      function showSplashScreen() {
+        if (!splashScreen) return;
+        splashScreen.style.display = 'flex';
+        // Force reflow for transition
+        void splashScreen.offsetWidth;
+        splashScreen.classList.remove('opacity-0', 'scale-105', 'pointer-events-none');
+      }
+
+      if (enterBtn) enterBtn.addEventListener('click', hideSplashScreen);
+      if (homeBtn) homeBtn.addEventListener('click', showSplashScreen);
     }
 
     window.addEventListener('DOMContentLoaded', initApp);
