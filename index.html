@@ -308,13 +308,13 @@
     <!-- CONTENITORE BOTTOM (Bottom Sheet + Navigation Bar) -->
     <div class="w-full pointer-events-none">
 
-      <!-- Modal Mobile Bottom Sheet (Safari WebKit Compliant) -->
-      <div id="bottom-sheet" class="fixed inset-x-0 bottom-16 z-50 max-h-[75dvh] flex flex-col rounded-t-3xl bg-zinc-950/98 border-t border-white/15 shadow-2xl transition-all duration-300 ease-out translate-y-full opacity-0 pointer-events-none invisible" style="isolation: isolate; transform: translateZ(0);">
+      <!-- Modal Mobile Bottom Sheet (Solid Opaque - Safari WebKit Compliant) -->
+      <div id="bottom-sheet" class="fixed inset-x-0 bottom-16 z-50 max-h-[75dvh] flex flex-col rounded-t-3xl bg-zinc-950 border-t border-white/15 shadow-2xl translate-y-full opacity-0 pointer-events-none invisible" style="background-color: #09090b; isolation: isolate; transform: translateZ(0); -webkit-backface-visibility: hidden; backface-visibility: hidden; will-change: transform; transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.25s ease-out;">
         
-        <!-- HEADER FISSO (NON SCORRE MAI: Maniglia + Ricerca PubChem + Quick Actions) -->
-        <div class="flex-none p-3.5 bg-zinc-950 border-b border-white/10 z-20 space-y-2.5">
+        <!-- HEADER FISSO OPACO (NON SCORRE MAI: Maniglia + Ricerca PubChem + Quick Actions) -->
+        <div class="flex-none p-3.5 bg-zinc-950 border-b border-white/10 z-20 space-y-2.5" style="background-color: #09090b;">
           <!-- Drag Handle Area -->
-          <div id="sheet-drag-handle" class="w-full flex items-center justify-between cursor-grab active:cursor-grabbing select-none py-0.5 px-0.5">
+          <div id="sheet-drag-handle" class="w-full flex items-center justify-between cursor-grab active:cursor-grabbing select-none py-0.5 px-0.5" style="touch-action: none;">
             <div class="flex items-center gap-1.5 text-cyan-400 font-semibold text-[11px] font-mono truncate min-w-0">
               <i data-lucide="atom" class="w-3.5 h-3.5 shrink-0"></i>
               <span id="txt-sheet-tab-title" class="truncate uppercase tracking-wider">RICERCA MOLECOLE</span>
@@ -365,8 +365,8 @@
           </div>
         </div>
 
-        <!-- CORPO SCORREVOLE (SOLO QUESTA PARTE SCORRE) -->
-        <div id="sheet-content-body" class="flex-1 overflow-y-auto p-4 space-y-4 pb-10 no-scrollbar">
+        <!-- CORPO SCORREVOLE (SOLO QUESTA PARTE SCORRE - SFONDO 100% OPACO) -->
+        <div id="sheet-content-body" class="flex-1 overflow-y-auto p-4 space-y-4 pb-10 no-scrollbar bg-zinc-950" style="background-color: #09090b;">
 
           <!-- TAB 1: MOTORE DI RICERCA UNIVERSALE (PRESET & RICERCHE POPOLARI) -->
           <div id="tab-sec-molecules" class="space-y-4">
@@ -1521,28 +1521,20 @@
 
     function setSheetSnapState(state) {
       if (!bottomSheet) return;
+      bottomSheet.style.transition = ''; // restore spring easing transition
       if (state === 'min' || state === 'hidden') {
         sheetSnapState = 'hidden';
         bottomSheet.style.height = '';
-        bottomSheet.style.transform = '';
-        bottomSheet.style.opacity = '';
-        bottomSheet.style.pointerEvents = '';
         bottomSheet.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none', 'invisible');
         bottomSheet.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto', 'visible');
       } else if (state === 'half') {
         sheetSnapState = 'half';
         bottomSheet.style.height = '50dvh';
-        bottomSheet.style.transform = '';
-        bottomSheet.style.opacity = '';
-        bottomSheet.style.pointerEvents = '';
         bottomSheet.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none', 'invisible');
         bottomSheet.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto', 'visible');
       } else if (state === 'full') {
         sheetSnapState = 'full';
         bottomSheet.style.height = '72dvh';
-        bottomSheet.style.transform = '';
-        bottomSheet.style.opacity = '';
-        bottomSheet.style.pointerEvents = '';
         bottomSheet.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none', 'invisible');
         bottomSheet.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto', 'visible');
       }
@@ -1568,14 +1560,16 @@
       dragStartTime = performance.now();
       startHeight = bottomSheet.getBoundingClientRect().height;
       bottomSheet.classList.add('dragging');
+      bottomSheet.style.transition = 'none'; // disable transition for 1:1 drag response
       dragHandle.setPointerCapture(e.pointerId);
     });
 
     dragHandle.addEventListener('pointermove', (e) => {
       if (!isDraggingSheet) return;
-      const deltaY = startY - e.clientY;
+      const deltaY = startY - e.clientY; // positive = dragging UPWARD
       const maxH = window.innerHeight * 0.75;
-      const newHeight = Math.max(100, Math.min(maxH, startHeight + deltaY));
+      const minH = 100;
+      const newHeight = Math.max(minH, Math.min(maxH, startHeight + deltaY));
       bottomSheet.style.height = `${newHeight}px`;
     });
 
@@ -1583,32 +1577,29 @@
       if (!isDraggingSheet) return;
       isDraggingSheet = false;
       try { dragHandle.releasePointerCapture(e.pointerId); } catch(err) {}
+      bottomSheet.classList.remove('dragging');
+      bottomSheet.style.transition = ''; // restore fluid spring transition
 
       const duration = Math.max(1, performance.now() - dragStartTime);
       const deltaY = e.clientY - startY; // positive deltaY = dragged DOWNWARD
-      const velocityY = deltaY / duration; // px/ms (>0.25 means fast drag down)
+      const velocityY = deltaY / duration; // px/ms (>0.45 = fast swipe down)
 
-      if (deltaY > 35 || velocityY > 0.25) {
-        // User dragged DOWNWARD: close or collapse
-        if (sheetSnapState === 'full') {
+      if (deltaY > 120 || velocityY > 0.45) {
+        // User dragged DOWNWARD > 120px or swiped fast: collapse / close
+        if (sheetSnapState === 'full' && deltaY < 220 && velocityY < 0.7) {
           setSheetSnapState('half');
         } else {
           setSheetSnapState('hidden');
         }
-      } else if (deltaY < -35 || velocityY < -0.25) {
-        // User dragged UPWARD: open or expand
+      } else if (deltaY < -80 || velocityY < -0.35) {
+        // User dragged UPWARD > 80px: expand to full
+        setSheetSnapState('full');
+      } else {
+        // Small drag (< 120px down / < 80px up): bounce back smoothly to current open state
         if (sheetSnapState === 'hidden') {
           setSheetSnapState('half');
         } else {
-          setSheetSnapState('full');
-        }
-      } else {
-        if (deltaY > 20) {
-          if (sheetSnapState === 'full') setSheetSnapState('half');
-          else setSheetSnapState('hidden');
-        } else if (deltaY < -20) {
-          if (sheetSnapState === 'hidden') setSheetSnapState('half');
-          else setSheetSnapState('full');
+          setSheetSnapState(sheetSnapState);
         }
       }
     }
@@ -1618,7 +1609,7 @@
 
     dragHandle.addEventListener('click', (e) => {
       if (e.target.closest('#btn-close-sheet')) return;
-      if (Math.abs(e.clientY - startY) < 5) {
+      if (Math.abs(e.clientY - startY) < 8) {
         if (sheetSnapState === 'hidden') setSheetSnapState('half');
         else if (sheetSnapState === 'half') setSheetSnapState('hidden');
         else setSheetSnapState('half');
